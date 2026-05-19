@@ -1,0 +1,10 @@
+# story-agent runtime outputs (story-scoped, may contain client data)
+.ai/outputs/stories/
+!.ai/outputs/.gitkeep
+
+# secrets
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
