@@ -5,7 +5,7 @@ description: Full workflow — fetch story from tracker, analyze codebase, gener
 
 # /story-agent
 
-Follow [.ai/agents/story-agent.md](../../.ai/agents/story-agent.md) for the story id provided.
+Follow [.ai/story-agent/agents/story-agent.md](../../.ai/story-agent/agents/story-agent.md) for the story id provided.
 
 This runs `/explain-story` then pauses to ask before continuing to `/plan-story`.
 

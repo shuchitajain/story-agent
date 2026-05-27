@@ -5,9 +5,9 @@ description: Produce an implementation plan for a story by reading the assembled
 
 # /plan-story
 
-Follow [.ai/agents/plan-story.md](../../.ai/agents/plan-story.md) for the story id provided.
+Follow [.ai/story-agent/agents/plan-story.md](../../.ai/story-agent/agents/plan-story.md) for the story id provided.
 
-If `.ai/outputs/stories/<id>/story.md` is missing, tell the user to run `/explain-story <id>` first.
+If `.ai/story-agent/outputs/stories/<id>/story.md` is missing, tell the user to run `/explain-story <id>` first.
 
 If no id is provided, ask the user for one and stop.
 

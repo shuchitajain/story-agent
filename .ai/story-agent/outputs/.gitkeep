@@ -1,0 +1,10 @@
+# Runtime output directory. Story-scoped folders are written here:
+# .ai/story-agent/outputs/stories/<id>/story.md
+# .ai/story-agent/outputs/stories/<id>/analysis.md
+# .ai/story-agent/outputs/stories/<id>/plan.md
+# .ai/story-agent/outputs/stories/<id>/attachments/
+# .ai/story-agent/outputs/stories/<id>/design/
+# .ai/story-agent/outputs/stories/<id>/manual-todo.md
+# .ai/story-agent/outputs/stories/<id>/explanation.md
+#
+# Everything under stories/ is gitignored. Do not commit client data.

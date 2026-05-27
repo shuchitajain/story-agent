@@ -18,10 +18,10 @@ tools: [tracker-mcp, design-mcp, vcs-mcp, filesystem]
 
 ## Output folder
 
-`.ai/outputs/stories/<id>/`
+`.ai/story-agent/outputs/stories/<id>/`
 
 ```
-.ai/outputs/stories/2356/
+.ai/story-agent/outputs/stories/2356/
 ├── story.md
 ├── attachments/
 ├── design/
@@ -69,7 +69,7 @@ tools: [tracker-mcp, design-mcp, vcs-mcp, filesystem]
    ```
    Done. Fetched <story title> from <tracker>.
 
-   Files in `.ai/outputs/stories/<id>/`:
+   Files in `.ai/story-agent/outputs/stories/<id>/`:
    - story.md — <one-line summary>
    - explanation.md — plain-English narrative
    - attachments/ — <N files> or (none)

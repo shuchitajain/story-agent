@@ -14,15 +14,15 @@ tools: [tracker-mcp, filesystem]
 
 ## Inputs
 
-- **story id** — required. Must match an existing `.ai/outputs/stories/<id>/` folder.
+- **story id** — required. Must match an existing `.ai/story-agent/outputs/stories/<id>/` folder.
 - **lens filter** — optional. Comma-separated subset of `architecture,state,edge,testing,rollback`. Defaults to all five.
 
 ## Output folder
 
-Adds to existing `.ai/outputs/stories/<id>/`:
+Adds to existing `.ai/story-agent/outputs/stories/<id>/`:
 
 ```
-.ai/outputs/stories/2356/
+.ai/story-agent/outputs/stories/2356/
 ├── story.md          (from explain-story)
 ├── explanation.md    (from explain-story)
 ├── attachments/      (from explain-story)
@@ -67,7 +67,7 @@ Adds to existing `.ai/outputs/stories/<id>/`:
 
 4. **Verify explain outputs exist.** If `story.md` missing, tell user to run `/explain-story <id>` first.
 
-5. **Read all files** in `.ai/outputs/stories/<id>/` — story.md, explanation.md, attachments, design metadata.
+5. **Read all files** in `.ai/story-agent/outputs/stories/<id>/` — story.md, explanation.md, attachments, design metadata.
 
 ### Phase 3: Analysis lenses
 
@@ -80,7 +80,7 @@ Adds to existing `.ai/outputs/stories/<id>/`:
    5. `rollback-risks.md` — feature flags, kill-switch, data rollback
 
    For each lens:
-   - Read `.ai/prompts/<lens>.md`
+   - Read `.ai/story-agent/prompts/<lens>.md`
    - Apply against:
      - `story.md` + attachments (from explain-story)
      - **Discovered project context** (from Phase 1: CLAUDE.md, README.md, package.json, folder structure, etc.)

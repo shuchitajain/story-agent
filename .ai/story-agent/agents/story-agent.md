@@ -52,7 +52,7 @@ tools: [tracker-mcp, design-mcp, vcs-mcp, filesystem]
    ```
    Done. Story <id> fully processed.
 
-   Files in `.ai/outputs/stories/<id>/`:
+   Files in `.ai/story-agent/outputs/stories/<id>/`:
    - story.md — tracker details, ACs, comments
    - explanation.md — plain-English narrative
    - analysis.md — 5 lenses, TL;DR at top
@@ -84,7 +84,7 @@ tools: [tracker-mcp, design-mcp, vcs-mcp, filesystem]
 ## Output folder
 
 ```
-.ai/outputs/stories/<id>/
+.ai/story-agent/outputs/stories/<id>/
 ├── story.md          (from explain-story)
 ├── explanation.md    (from explain-story)
 ├── attachments/      (from explain-story)

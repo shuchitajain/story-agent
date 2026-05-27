@@ -1,0 +1,21 @@
+{
+  "jira": {
+    "type": "stdio",
+    "command": "uvx",
+    "args": [
+      "mcp-atlassian"
+    ],
+    "envFile": "${workspaceFolder}/.env"
+  },
+  "figma": {
+    "url": "https://mcp.figma.com/mcp",
+    "type": "http"
+  },
+  "github": {
+    "command": "npx",
+    "args": [
+      "@modelcontextprotocol/server-github"
+    ],
+    "envFile": "${workspaceFolder}/.env"
+  }
+}

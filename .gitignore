@@ -1,12 +1,14 @@
 # story-agent runtime outputs (story-scoped, may contain client data)
+.ai/story-agent/outputs/stories/
+!.ai/story-agent/outputs/.gitkeep
+
+# legacy path (kept ignored for backward compatibility)
 .ai/outputs/stories/
-!.ai/outputs/.gitkeep
 
 # secrets
 .env
 .env.*
 !.env.example
-!.vscode/mcp.example.json
 .vscode/
 .idea/
 **/.DS_Store

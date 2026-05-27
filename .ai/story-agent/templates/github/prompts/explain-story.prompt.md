@@ -5,7 +5,7 @@ description: Fetch a story from your tracker (Jira / ADO / Linear / GitHub Issue
 
 # /explain-story
 
-Follow [.ai/agents/explain-story.md](../../.ai/agents/explain-story.md) for the story id provided.
+Follow [.ai/story-agent/agents/explain-story.md](../../.ai/story-agent/agents/explain-story.md) for the story id provided.
 
 If no id is provided, ask the user for one and stop.
 
