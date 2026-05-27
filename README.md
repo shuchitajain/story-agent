@@ -2,9 +2,6 @@
 
 Turn a story ID into a context folder and implementation plan in two prompts.
 
-![story-agent.png](story-agent.png)
-*Visual: story-agent workflow overview*
-
 ## TL;DR
 
 ```text
