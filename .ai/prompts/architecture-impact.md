@@ -15,7 +15,7 @@ Identify which layers, services, packages, and contracts the change touches, and
 
 ## Inputs expected
 - Assembled story context (`story.md`) **or** any change description.
-- Workspace overview (`.ai/context/project-overview.md`) so layer naming is accurate.
+- Discovered project context (CLAUDE.md, README.md, folder structure) so layer naming is accurate.
 
 ## Output template
 
@@ -46,5 +46,5 @@ Identify which layers, services, packages, and contracts the change touches, and
 
 ## Done criteria
 - Every section present (write "none identified" rather than omit).
-- Components named match real paths in `.ai/context/project-overview.md`.
+- Components named match real paths discovered from project structure.
 - ADR-needed verdict is binary, not "maybe".

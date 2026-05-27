@@ -15,7 +15,7 @@ Force an explicit rollback verdict before shipping. Identify data-shape changes 
 ## Inputs expected
 - Assembled story context.
 - Output of `state-changes.md` lens (reversibility verdict per store).
-- Workspace deployment / flag conventions from `.ai/context/project-overview.md`.
+- Discovered deployment / flag conventions from project context.
 
 ## Output template
 

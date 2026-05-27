@@ -1,13 +1,13 @@
 ---
 mode: agent
-description: Produce an implementation plan for a story by reading the assembled context folder. Runs explain mode first if outputs are missing. Works with any tracker configured in project-overview.md.
+description: Produce an implementation plan for a story by reading the assembled context folder. Runs explain mode first if outputs are missing.
 ---
 
 # /plan-story
 
-Follow [.ai/agents/story-agent.md](../../.ai/agents/story-agent.md) in **`plan` mode** for the story id provided in the user's message.
+Follow [.ai/agents/plan-story.md](../../.ai/agents/plan-story.md) for the story id provided.
 
-If `.ai/outputs/stories/<id>/story.md` or `analysis.md` is missing, run `explain` first, then continue with `plan`.
+If `.ai/outputs/stories/<id>/story.md` is missing, tell the user to run `/explain-story <id>` first.
 
 If no id is provided, ask the user for one and stop.
 

@@ -14,7 +14,7 @@ ACs describe the happy path. This lens enumerates the failure / boundary / adver
 
 ## Inputs expected
 - Assembled story context.
-- Stack-specific edge categories from `.ai/context/project-overview.md` (e.g. offline-first, conflict resolution).
+- Stack-specific edge categories from discovered project context (e.g. offline-first, conflict resolution).
 
 ## Output template
 
@@ -66,5 +66,5 @@ ACs describe the happy path. This lens enumerates the failure / boundary / adver
 
 ## Done criteria
 - At least one item per category, or "not applicable: <reason>".
-- Mobile-specific section is mandatory if `.ai/context/project-overview.md` declares a mobile stack.
+- Mobile-specific section is mandatory if project context indicates a mobile stack.
 - Out-of-scope list is not empty (forces a decision).

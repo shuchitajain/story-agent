@@ -13,7 +13,7 @@ Produce a concrete test plan: unit / integration / contract / E2E split, fixture
 
 ## Inputs expected
 - Assembled story context (especially ACs and edge-cases lens output).
-- Workspace test conventions from `.ai/context/project-overview.md`.
+- Discovered test conventions from project context (test folders, frameworks, coverage gates).
 
 ## Output template
 
