@@ -1,7 +1,41 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-TARGET_DIR="${1:-.}"
+TARGET_DIR=""
+WITH_COPILOT_PROMPTS=false
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --with-copilot-prompts)
+      WITH_COPILOT_PROMPTS=true
+      shift
+      ;;
+    --help|-h)
+      cat <<'EOF'
+Usage:
+  ./scripts/story-agent-init.sh [target-directory] [--with-copilot-prompts]
+
+Options:
+  --with-copilot-prompts  Force install of .github/prompts templates.
+EOF
+      exit 0
+      ;;
+    --*)
+      echo "ERROR: unknown option: $1" >&2
+      exit 1
+      ;;
+    *)
+      if [[ -n "${TARGET_DIR}" ]]; then
+        echo "ERROR: multiple target directories provided" >&2
+        exit 1
+      fi
+      TARGET_DIR="$1"
+      shift
+      ;;
+  esac
+done
+
+TARGET_DIR="${TARGET_DIR:-.}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SOURCE_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ASSET_ROOT="${SOURCE_ROOT}/.ai/story-agent"
@@ -247,7 +281,12 @@ merge_mcp_servers() {
 
 copy_tree_additive "${ASSET_ROOT}" "${TARGET_ROOT}/.ai/story-agent"
 
-if [[ -d "${ASSET_ROOT}/templates/github/prompts" ]]; then
+copilot_detected=false
+if [[ -f "${TARGET_ROOT}/.github/copilot-instructions.md" || -d "${TARGET_ROOT}/.github/prompts" ]]; then
+  copilot_detected=true
+fi
+
+if [[ -d "${ASSET_ROOT}/templates/github/prompts" ]] && ([[ "${WITH_COPILOT_PROMPTS}" == "true" ]] || [[ "${copilot_detected}" == "true" ]]); then
   copy_tree_additive \
     "${ASSET_ROOT}/templates/github/prompts" \
     "${TARGET_ROOT}/.github/prompts"

@@ -27,17 +27,29 @@ cd <local-path>/story-agent
 ./scripts/story-agent init /path/to/your/project
 ```
 
+Optional Copilot adapter install:
+
+```bash
+./scripts/story-agent init /path/to/your/project --with-copilot-prompts
+```
+
 What init does:
 
 - creates `.ai/story-agent/` in the target repo
 - copies story-agent assets without overwriting existing files
-- installs slash command prompt wrappers into `.github/prompts/` if missing
+- installs slash command prompt wrappers into `.github/prompts/` only when Copilot is already detected, or when `--with-copilot-prompts` is passed
 - patches `.gitignore` with story-agent output paths
 - detects existing AI instruction systems and appends a small reference block
 - creates a minimal `.github/copilot-instructions.md` only when no instruction system exists
 - merges story-agent MCP servers into existing MCP config files (`.vscode/mcp.json`, `.cursor/mcp.json`, `.mcp.json`, `~/.claude.json`, etc.) without removing existing servers
 
 Running init multiple times is safe and idempotent.
+
+Prompt behavior across IDEs:
+
+- canonical prompts always live in `.ai/story-agent/prompts/`
+- these prompts are used regardless of IDE through the story-agent instructions/agents
+- `.github/prompts/` files are optional Copilot slash-command wrappers, not the source of truth
 
 ## Existing AI Systems Supported
 
