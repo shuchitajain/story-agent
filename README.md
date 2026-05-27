@@ -85,7 +85,7 @@ Claude Code note:
 
 Template used for merge:
 
-`.ai/story-agent/templates/vscode/mcp.servers.json`
+`.ai/story-agent/templates/vscode/mcp.json`
 
 ## Daily Usage
 

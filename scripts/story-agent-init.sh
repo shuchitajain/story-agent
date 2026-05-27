@@ -137,7 +137,7 @@ EOF
 
 merge_mcp_servers_into_file() {
   local mcp_file="$1"
-  local servers_template="${ASSET_ROOT}/templates/vscode/mcp.servers.json"
+  local servers_template="${ASSET_ROOT}/templates/vscode/mcp.json"
 
   mkdir -p "$(dirname "${mcp_file}")"
 
