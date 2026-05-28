@@ -1,8 +1,31 @@
-# story-agent
+<div align="center">
 
-AI workflow infrastructure that plugs into your existing coding assistant ecosystem.
+<img src="banner.png" width="100%" />
+
+# story-agent
+> AI workflow infrastructure that plugs into your existing coding assistant ecosystem.
+
+<p>
+  <a href="#installation">Quick Start</a> •
+  <a href="#existing-ai-systems-supported">Existing AI Systems Supported</a> •
+  <a href="#mcp-setup-composable">MCP Setup</a> •
+  <a href="#daily-usage">Daily Usage</a> •
+  <a href="#prerequisites">Prerequisites</a>
+</p>
+
+<p>
+  <a href="https://www.linkedin.com/in/shuchita-jain/"><img src="https://img.shields.io/badge/Follow%20on-LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" /></a>&nbsp;
+  <a href="https://medium.com/@coderSJ"><img src="https://img.shields.io/badge/Follow%20on-Medium-12100E?style=for-the-badge" /></a>
+</p>
+
+
+</div>
+
+---
 
 story-agent is additive by design. It does not replace your current setup for GitHub Copilot, Claude Code, Cursor, Windsurf, Roo, or other agent systems.
+
+---
 
 ## TL;DR
 
@@ -17,7 +40,7 @@ story-agent is additive by design. It does not replace your current setup for Gi
 - `/plan-story` discovers codebase context, runs 5 analysis lenses, generates plan
 - Outputs: `.ai/story-agent/outputs/stories/<id>/`
 
-## Installation
+## Quick Start
 
 Use the local init command (conceptually equivalent to `uvx story-agent init`):
 
@@ -69,7 +92,7 @@ Integration is additive. The installer appends a reference to:
 
 No existing instruction content is replaced.
 
-## MCP Setup (Composable)
+## MCP Setup
 
 story-agent no longer assumes ownership of a single MCP config path.
 
