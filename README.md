@@ -6,9 +6,9 @@
 > AI workflow infrastructure that plugs into your existing coding assistant ecosystem.
 
 <p>
-  <a href="#installation">Quick Start</a> •
+  <a href="#quick-start">Quick Start</a> •
   <a href="#existing-ai-systems-supported">Existing AI Systems Supported</a> •
-  <a href="#mcp-setup-composable">MCP Setup</a> •
+  <a href="#mcp-setup">MCP Setup</a> •
   <a href="#daily-usage">Daily Usage</a> •
   <a href="#prerequisites">Prerequisites</a>
 </p>
