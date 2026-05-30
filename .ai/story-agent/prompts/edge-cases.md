@@ -54,6 +54,14 @@ ACs describe the happy path. This lens enumerates the failure / boundary / adver
 - Deep-link entry mid-flow
 - Locale / RTL / dark-mode rendering
 
+### Actions with unspecified scope or side effects (if applicable)
+- Action scope is ambiguous — what exactly is affected vs. explicitly excluded?
+- No stated UX consequence — missing confirmation, feedback, error state, or navigation outcome
+- No recovery path — no undo, retry, or partial-failure handling mentioned
+- Exit / back-navigation after a state-changing action — is unsaved or changed state silently lost?
+- Cascade side effects not mentioned in ACs — action triggers downstream changes no AC covers
+- Partial execution — action is interrupted mid-way; resulting state is undefined
+
 ### Security / abuse edges
 - Replay attacks (if writing to an API)
 - Privilege escalation paths

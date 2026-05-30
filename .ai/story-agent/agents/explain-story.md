@@ -23,6 +23,7 @@ tools: [tracker-mcp, design-mcp, vcs-mcp, filesystem]
 ```
 .ai/story-agent/outputs/stories/2356/
 ├── story.md
+├── explanation.md
 ├── attachments/
 ├── design/
 └── manual-todo.md
@@ -60,9 +61,17 @@ tools: [tracker-mcp, design-mcp, vcs-mcp, filesystem]
    ## Why it matters
    <One sentence. User pain or business reason.>
 
+   ## Likely impact (preview, not code analysis)
+   - <1-3 bullets. High-level areas this probably affects>
+
    ## Open questions
-   - <questions that need answers before implementation>
+   - <only materially relevant questions that affect implementation, scope, or risk>
    ```
+
+   Rules:
+   - Read `.ai/story-agent/prompts/question-classification.md` before deciding what to surface.
+   - Keep this to a preview only. Do not claim codebase certainty or file-level impact here.
+   - Zero questions is acceptable when the story is already specific enough.
 
 6. **Print chat summary:**
 
@@ -92,6 +101,7 @@ tools: [tracker-mcp, design-mcp, vcs-mcp, filesystem]
 - Single retry on MCP failures, then skip-and-log to `manual-todo.md`
 - Never block on a failed fetch — continue with what you have
 - Always report skipped items in chat summary
+- Split `manual-todo.md` into `Access / Fetch Failures` and `Story Gaps` when both are present
 
 ## Output style
 
@@ -107,5 +117,6 @@ tools: [tracker-mcp, design-mcp, vcs-mcp, filesystem]
 - Never run analysis lenses — that's `plan-story`
 - Never fabricate field values — write "(not set)" if empty
 - Never embed secrets in output files
+- Use `question-classification.md` to filter out low-value or cosmetic questions
 - **Use `list_dir` for workspace/directory discovery** — do not rely on `file_search` or `grep_search` to find directories; glob patterns skip hidden directories (`.ai/`, `.github/`, etc.)
 

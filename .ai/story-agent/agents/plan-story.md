@@ -15,7 +15,7 @@ tools: [tracker-mcp, filesystem]
 ## Inputs
 
 - **story id** — required. Must match an existing `.ai/story-agent/outputs/stories/<id>/` folder.
-- **lens filter** — optional. Comma-separated subset of `architecture,state,edge,testing,rollback`. Defaults to all five.
+- **lens filter** — optional. Comma-separated subset of `architecture,state,edge,testing,rollback`. Defaults to all five. Question classification and late-answer reconciliation remain workflow-owned and are not filterable.
 
 ## Output folder
 
@@ -26,6 +26,8 @@ Adds to existing `.ai/story-agent/outputs/stories/<id>/`:
 ├── story.md          (from explain-story)
 ├── explanation.md    (from explain-story)
 ├── attachments/      (from explain-story)
+├── design/           (from explain-story)
+├── manual-todo.md    (from explain-story)
 ├── analysis.md       ← NEW
 ├── decisions.md      ← NEW
 └── plan.md           ← NEW
@@ -69,9 +71,13 @@ Adds to existing `.ai/story-agent/outputs/stories/<id>/`:
 
 5. **Read all files** in `.ai/story-agent/outputs/stories/<id>/` — story.md, explanation.md, attachments, design metadata.
 
+6. **Load reusable planning policies** before question handling:
+   - Read `.ai/story-agent/prompts/question-classification.md`
+   - Read `.ai/story-agent/prompts/late-answer-reconciliation.md` when updating an existing plan
+
 ### Phase 3: Analysis lenses
 
-6. **Run each lens** (order matters — later lenses reference earlier verdicts):
+7. **Run each lens** (order matters — later lenses reference earlier verdicts):
 
    1. `architecture-impact.md` — layers touched, cross-cutting concerns, ADR needed?
    2. `state-changes.md` — stores affected, migrations, reversibility verdict
@@ -87,7 +93,7 @@ Adds to existing `.ai/story-agent/outputs/stories/<id>/`:
    - Use discovered stack, conventions, and architecture to ground the analysis
    - Append output to `analysis.md`
 
-7. **Write `analysis.md`** with TL;DR first:
+8. **Write `analysis.md`** with TL;DR first:
 
    ```markdown
    # Analysis — <id>
@@ -111,18 +117,30 @@ Adds to existing `.ai/story-agent/outputs/stories/<id>/`:
 
 ### Phase 4: Open questions gate
 
-8. **Collect open questions** from all lenses. Pick top 5 most plan-blocking. Ask user:
+9. **Classify relevant questions** from explain output and all lenses using `question-classification.md`.
+   - Keep only questions that materially affect implementation, scope, risk, dependencies, testing burden, or rollback complexity.
+   - Zero questions is valid.
+   - Keep stable IDs only where they help future reconciliation.
+
+10. **Ask only the remaining relevant questions.** Pick the top 5 by planning impact and group by category. Ask user:
 
    ```
-   Before planning, I need answers to <N> questions:
+   Before planning, I have <N> relevant questions:
 
-   1. **<question>** — from: <lens>. Default: <suggestion>.
-   2. ...
+   Blocking
+   1. **<question>** — why it matters: <one line>. Default: <suggestion>.
+
+   Scope
+   2. **<question>** — why it matters: <one line>. Default: <suggestion>.
+
+   Clarification
+   3. **<question>** — why it matters: <one line>. Default: <suggestion>.
+   ...
 
    Reply with numbered answers, `default` to accept all, or `skip` to plan with assumptions flagged.
    ```
 
-9. **Wait for reply.** Write answers to `decisions.md`:
+11. **Wait for reply.** Write answers to `decisions.md`:
 
    ```markdown
    # Decisions — <id>
@@ -130,22 +148,31 @@ Adds to existing `.ai/story-agent/outputs/stories/<id>/`:
    Recorded <timestamp>.
 
    ## Q1. <question>
-   - From: <lens>
+   - Category: <blocking | scope | clarification>
+   - From: <lens or explain-story>
+   - Why this matters: <one line>
    - Answer: <user answer>
    - Implication: <what this changes>
    ```
 
+12. **If `plan.md` already exists and the user is returning with late answers,** apply `.ai/story-agent/prompts/late-answer-reconciliation.md` before regenerating the final plan. Update `decisions.md` and only ask follow-ups when a real contradiction remains.
+
 ### Phase 5: Generate plan
 
-10. **Walk workspace** to identify files to modify. Match against architecture-impact output. Mark uncertain paths as "candidate, verify".
+13. **Walk workspace** to identify files to modify. Match against architecture-impact output. Mark uncertain paths as "candidate, verify".
 
-11. **Write `plan.md`:**
+14. **Write `plan.md`:**
 
     ```markdown
     # Plan: <id> — <title>
 
     ## Summary
-    2-3 sentences.
+    2-3 short sentences.
+
+    ## Status
+    - Confidence: <high | medium | low>
+    - Assumptions in force: <count>
+    - Story last reviewed: <timestamp if known>
 
     ## Impacted files
     - `path/to/file` — why
@@ -165,13 +192,24 @@ Adds to existing `.ai/story-agent/outputs/stories/<id>/`:
     ## Rollback plan
     - <from rollback-risks>
 
+   ## Assumptions taken
+   - <only unresolved assumptions still affecting the plan>
+
+   ## What changed since last plan
+   - <only when this is a refresh>
+
     ## Out of scope
     - <excluded items>
     ```
 
-    **Hard cap: no step modifies >3 files.** Split before writing.
+   Rules:
+   - Keep this implementation-grade, but skim-friendly for a human reviewer.
+   - Do not restate the story, ACs, or full lens output.
+   - Include only materially relevant impacted files.
+   - **Hard cap: no step modifies >3 files.** Split before writing.
+   - Prefer bullets and short paragraphs over long narrative.
 
-12. **Print chat summary:**
+15. **Print chat summary:**
 
     ```
     Plan ready. <one sentence: what the plan does in human terms>
@@ -194,7 +232,7 @@ Adds to existing `.ai/story-agent/outputs/stories/<id>/`:
 |----------------|-----------------------------------------|
 | `analysis.md`  | 150 lines total, TL;DR in first 3 lines |
 | `plan.md`      | 200 lines total                         |
-| `decisions.md` | 4 lines per question                    |
+| `decisions.md` | 6 lines per question                    |
 
 ## Output style
 
@@ -203,6 +241,7 @@ Adds to existing `.ai/story-agent/outputs/stories/<id>/`:
 - No filler phrases ("It's worth noting", "As mentioned above")
 - Tables for compare/contrast
 - Right-size lenses — short is fine if nothing surprising
+- `plan.md` should read like an execution brief, not a thesis
 - Never paste raw tool errors in chat — log to manual-todo.md
 
 ## Hard rules
@@ -212,6 +251,7 @@ Adds to existing `.ai/story-agent/outputs/stories/<id>/`:
 - No step modifies >3 files
 - Stop at planning — never auto-edit source files
 - If story.md missing, tell user to run `/explain-story` first
+- Question classification and reconciliation are workflow-required, even when lens filters are used
 
 ## Human-in-the-loop
 

@@ -44,6 +44,7 @@ tools: [tracker-mcp, design-mcp, vcs-mcp, filesystem]
 3. **If user says yes, run `plan-story <id>`**
    - Discovers codebase context (CLAUDE.md, README.md, package.json, etc.)
    - Runs analysis lenses
+   - Classifies only relevant open questions
    - Asks open questions gate
    - Generates implementation plan
    - Outputs: `analysis.md`, `decisions.md`, `plan.md`
@@ -79,6 +80,7 @@ tools: [tracker-mcp, design-mcp, vcs-mcp, filesystem]
 - Pauses after explain completes — asks before continuing to plan
 - Pauses at open questions gate (during plan-story phase)
 - User answers before plan is generated
+- If user answers later, `plan-story` refreshes the existing plan instead of starting from scratch when possible
 - Never auto-implements — stops at `plan.md`
 
 ## Output folder

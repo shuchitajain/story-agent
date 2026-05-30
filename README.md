@@ -38,6 +38,7 @@ story-agent is additive by design. It does not replace your current setup for Gi
 - `/story-agent` runs the full workflow end-to-end
 - `/explain-story` fetches story details, attachments, linked PRs/designs
 - `/plan-story` discovers codebase context, runs 5 analysis lenses, generates plan
+- Question classification and late-answer refresh are built into the workflow; they are not separate top-level agents
 - Outputs: `.ai/story-agent/outputs/stories/<id>/`
 
 ## Quick Start
@@ -123,6 +124,12 @@ All `/story-agent`, `/explain-story`, and `/plan-story` commands must run in age
 
 Open `.ai/story-agent/outputs/stories/<id>/plan.md` and hand off to your coding agent.
 
+Plan quality bar:
+
+- detailed enough for an implementation agent to execute without guesswork
+- concise enough for a human reviewer to scan quickly
+- no long narrative restatement of the story or full lens output inside `plan.md`
+
 ## Output Files
 
 Inside `.ai/story-agent/outputs/stories/<id>/`:
@@ -130,11 +137,11 @@ Inside `.ai/story-agent/outputs/stories/<id>/`:
 - `story.md` — verbatim story details and links
 - `attachments/` — downloaded files from tracker
 - `design/` — rendered design frames (if configured)
-- `manual-todo.md` — SSO-blocked links requiring manual paste
+- `manual-todo.md` — access blockers and story gaps that need manual follow-up
 - `analysis.md` — lens-based impact analysis
-- `explanation.md` — concise narrative and open questions
-- `decisions.md` — open-question responses captured during planning
-- `plan.md` — ordered implementation steps, risks, checks, rollback notes
+- `explanation.md` — concise narrative, likely impact preview, and only relevant open questions
+- `decisions.md` — classified question responses captured during planning
+- `plan.md` — concise implementation brief with ordered steps, risks, checks, rollback notes, and active assumptions
 
 ## Prerequisites
 
