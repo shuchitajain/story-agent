@@ -120,9 +120,18 @@ All `/story-agent`, `/explain-story`, and `/plan-story` commands must run in age
 /explain-story <id>
 /plan-story <id>
 /plan-story <id> lens=architecture,testing
+continue story <id>
+continue story <id> from task <N>
 ```
 
 Open `.ai/story-agent/outputs/stories/<id>/plan.md` and hand off to your coding agent.
+
+If the plan is taskized, hand off one task at a time. After each task passes its validation step:
+1. Fill in `validation.md` for that task, including handoff notes for the next task.
+2. Update `execution-state.json` (`current_task`, `completed_tasks`, `status`, `awaiting_human_approval`, `repo_anchor`).
+3. Use `continue story <id>` in a new session to load the next task, or `continue story <id> from task <N>` when you need to target a specific task.
+
+If the plan is unsplit, hand off the full plan as one bounded execution unit and record the final validation in `validation.md`.
 
 Plan quality bar:
 
@@ -139,9 +148,11 @@ Inside `.ai/story-agent/outputs/stories/<id>/`:
 - `design/` — rendered design frames (if configured)
 - `manual-todo.md` — access blockers and story gaps that need manual follow-up
 - `analysis.md` — lens-based impact analysis
-- `explanation.md` — concise narrative, likely impact preview, and only relevant open questions
-- `decisions.md` — classified question responses captured during planning
-- `plan.md` — concise implementation brief with ordered steps, risks, checks, rollback notes, and active assumptions
+- `explanation.md` — concise narrative and likely impact preview; contains an "Open questions" section only when PM questions were left unanswered at the end of `explain-story`
+- `decisions.md` — running ledger of all answered questions (PM and Engineering), written by both `explain-story` and `plan-story`; entries include category, audience, default assumption, answer, and implication
+- `plan.md` — implementation brief; either unsplit for small changes or taskized for broader work
+- `execution-state.json` — machine-readable task state; tracks the current task, completed tasks, approval state, status, and a repo anchor (git commit hash). Read by the orchestrator on resume. Updated by the implementation agent after each validated task.
+- `validation.md` — human-readable validation receipt; created as a skeleton at plan-generation time and used for validation results, human approval, and task handoff notes. Always present.
 
 ## Prerequisites
 

@@ -12,3 +12,7 @@
 .vscode/
 .idea/
 **/.DS_Store
+
+# repo-level meta files (not for distribution)
+/plan.md
+/decisions.md

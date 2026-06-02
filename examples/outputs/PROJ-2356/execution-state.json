@@ -1,0 +1,13 @@
+{
+  "story_id": "PROJ-2356",
+  "plan_version": 1,
+  "is_taskized": true,
+  "current_task": "task-1",
+  "completed_tasks": [],
+  "status": "ready",
+  "blocked_reason": null,
+  "awaiting_human_approval": false,
+  "last_validated_task": null,
+  "repo_anchor": "unknown",
+  "last_updated": "2026-06-03T10:14:22Z"
+}

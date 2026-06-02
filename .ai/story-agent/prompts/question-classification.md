@@ -31,6 +31,20 @@ These story or AC patterns should automatically produce at least one question, e
 
 **Self-check before surfacing any question:** Would a PM, designer, or business stakeholder be the right person to answer this? If no — do not ask. Take the safe default and note it as an assumption.
 
+### Technical domain examples — never ask the PM these
+The following question types are always technical discovery tasks. Classify them as silent assumptions, then flag them in `plan.md` for codebase investigation:
+
+- **Conflict resolution / sync strategy** — "if local and server state differ, which wins?" / "is the local write optimistic or authoritative?" — this depends on existing sync architecture, not product intent. Default: server wins on re-sync; local write is optimistic UI only. Verify in codebase.
+- **API contract details** — request shape, field names, error codes, idempotency keys, versioning — inspect the API spec or existing calls.
+- **State management internals** — where state lives (store, cache, session), how it's invalidated, which layer owns a given piece of data.
+- **Existing behaviour of adjacent code** — "does the current auth flow handle X?" — requires reading the code, not a PM answer.
+- **Infrastructure / deployment scope** — "is this a single-region or multi-region deploy?" — ops/engineering question.
+
+If any of these surfaces as a potential question, convert it to an assumption block in `plan.md` instead:
+```
+Assumption: <technical default taken>. Verify: <what to look at in the codebase>.
+```
+
 ## Required fields per item
 - `ID` — stable only if the workflow needs to track it across revisions.
 - `Category` — `Blocking`, `Scope`, or `Clarification`.

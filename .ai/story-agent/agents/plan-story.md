@@ -23,14 +23,16 @@ Adds to existing `.ai/story-agent/outputs/stories/<id>/`:
 
 ```
 .ai/story-agent/outputs/stories/2356/
-├── story.md          (from explain-story)
-├── explanation.md    (from explain-story)
-├── attachments/      (from explain-story)
-├── design/           (from explain-story)
-├── manual-todo.md    (from explain-story)
-├── analysis.md       ← NEW
-├── decisions.md      ← NEW
-└── plan.md           ← NEW
+├── story.md                (from explain-story)
+├── explanation.md          (from explain-story)
+├── attachments/            (from explain-story)
+├── design/                 (from explain-story)
+├── manual-todo.md          (from explain-story)
+├── analysis.md             ← NEW
+├── decisions.md            ← NEW
+├── plan.md                 ← NEW
+├── execution-state.json    ← NEW (always)
+└── validation.md           ← NEW (always)
 ```
 
 ---
@@ -117,12 +119,15 @@ Adds to existing `.ai/story-agent/outputs/stories/<id>/`:
 
 ### Phase 4: Open questions gate
 
-9. **Classify relevant questions** from explain output and all lenses using `question-classification.md`.
+9. **Drain remaining PM questions from `explanation.md`.** Check the "Open questions" section of `explanation.md`. Any entries still present were not answered during `explain-story`. Include them in the question pool as-is — do not re-classify them.
+
+10. **Classify Engineering questions** from lens output using `question-classification.md`.
    - Keep only questions that materially affect implementation, scope, risk, dependencies, testing burden, or rollback complexity.
+   - Do not duplicate any question already present in `explanation.md` Open questions.
    - Zero questions is valid.
    - Keep stable IDs only where they help future reconciliation.
 
-10. **Ask only the remaining relevant questions.** Pick the top 5 by planning impact and group by category. Ask user:
+11. **Ask all remaining questions** (PM carry-overs + Engineering). Pick the top 5 by planning impact and group by category. Ask user:
 
    ```
    Before planning, I have <N> relevant questions:
@@ -137,23 +142,30 @@ Adds to existing `.ai/story-agent/outputs/stories/<id>/`:
    3. **<question>** — why it matters: <one line>. Default: <suggestion>.
    ...
 
-   Reply with numbered answers, `default` to accept all, or `skip` to plan with assumptions flagged.
+   Reply with numbered answers, or `default` / `skip` to accept all defaults.
    ```
 
-11. **Wait for reply.** Write answers to `decisions.md`:
+   `skip` and `default` are equivalent — both accept all default assumptions and proceed to planning.
 
-   ```markdown
-   # Decisions — <id>
+12. **Wait for reply.** For each answered, defaulted, or skipped question:
+   - Append to `decisions.md` (create or extend — preserve existing entries from explain-story):
 
-   Recorded <timestamp>.
+     ```markdown
+     # Decisions — <id>
 
-   ## Q1. <question>
-   - Category: <blocking | scope | clarification>
-   - From: <lens or explain-story>
-   - Why this matters: <one line>
-   - Answer: <user answer>
-   - Implication: <what this changes>
-   ```
+     Recorded <timestamp>.
+
+     ## Q<n>. <question>
+     - Category: <blocking | scope | clarification>
+     - Audience: <PM | Engineering>
+     - From: <lens name or explain-story>
+     - Why this matters: <one line>
+     - Answer: <user answer> or `default: <assumption text>`
+     - Implication: <what this changes>
+     ```
+
+   - If the question came from `explanation.md` Open questions, remove it from that section.
+   - If all PM carry-overs are now answered, remove the "Open questions" section heading from `explanation.md` entirely.
 
 12. **If `plan.md` already exists and the user is returning with late answers,** apply `.ai/story-agent/prompts/late-answer-reconciliation.md` before regenerating the final plan. Update `decisions.md` and only ask follow-ups when a real contradiction remains.
 
@@ -161,7 +173,17 @@ Adds to existing `.ai/story-agent/outputs/stories/<id>/`:
 
 13. **Walk workspace** to identify files to modify. Match against architecture-impact output. Mark uncertain paths as "candidate, verify".
 
-14. **Write `plan.md`:**
+14. **Decide: unsplit or taskized?**
+
+   Keep the plan **unsplit** when the change is small enough to execute and review in one pass.
+   Use that mode when the work is likely to touch about 3 to 4 files total, follows one tight dependency chain, and does not mix unrelated concerns.
+
+   Split the plan into **tasks** when the overall change is too broad for one safe review.
+   Use taskized mode when the implementation would otherwise span too many files, mix unrelated concerns, or leave the coding agent without a clear review boundary.
+
+15. **Write `plan.md`:**
+
+   **Unsplit plan template** (small, reviewable changes):
 
     ```markdown
     # Plan: <id> — <title>
@@ -173,6 +195,7 @@ Adds to existing `.ai/story-agent/outputs/stories/<id>/`:
     - Confidence: <high | medium | low>
     - Assumptions in force: <count>
     - Story last reviewed: <timestamp if known>
+   - Taskized: no
 
     ## Impacted files
     - `path/to/file` — why
@@ -192,47 +215,210 @@ Adds to existing `.ai/story-agent/outputs/stories/<id>/`:
     ## Rollback plan
     - <from rollback-risks>
 
-   ## Assumptions taken
-   - <only unresolved assumptions still affecting the plan>
+    ## Assumptions taken
+    - <only unresolved assumptions still affecting the plan>
 
-   ## What changed since last plan
-   - <only when this is a refresh>
+    ## What changed since last plan
+    - <only when this is a refresh>
+
+    ## Out of scope
+    - <excluded items>
+
+   ## Final validation checkpoint
+   - <commands and checks required before asking for human review>
+    ```
+
+   **Taskized plan template** (broad changes that need review boundaries):
+
+    ```markdown
+    # Plan: <id> — <title>
+
+    ## Summary
+    2-3 short sentences.
+
+    ## Status
+    - Taskized: yes — <N> tasks, current: task-1
+    - Assumptions in force: <count>
+    - Story last reviewed: <timestamp if known>
+
+    ## Tasks
+
+    ### Task 1 — <task title>
+    **ID:** task-1
+    **Depends on:** none
+    **Goal:** <single concrete outcome>
+
+    **Files:**
+    - `path/to/file`
+    - `path/to/file`
+
+    **Change:** <one short paragraph>
+    **Verify:** <concrete command or behavior check>
+    **Handoff expectation:** <what the next task should receive>
+
+    ### Task 2 — <task title>
+    **ID:** task-2
+    **Depends on:** task-1
+    **Goal:** <single concrete outcome>
+
+    **Files:**
+    - `path/to/file`
+
+    **Change:** <one short paragraph>
+    **Verify:** <concrete command or behavior check>
+    **Handoff expectation:** <what the next task should receive>
+
+    ## Human checkpoints
+    - Review and approve after each completed task before advancing.
+    - Use `validation.md` to record validation results and handoff notes.
+
+    ## Final validation checkpoint
+    - <final checks once all tasks are complete>
+
+    ## Risks (from analysis.md)
+    - <one line each>
+
+    ## Tests to write
+    - <from testing-strategy>
+
+    ## Rollback plan
+    - <from rollback-risks>
+
+    ## Assumptions taken
+    - <only unresolved assumptions still affecting the plan>
+
+    ## What changed since last plan
+    - <only when this is a refresh>
 
     ## Out of scope
     - <excluded items>
     ```
 
-   Rules:
+   Rules (apply to both unsplit and taskized):
    - Keep this implementation-grade, but skim-friendly for a human reviewer.
    - Do not restate the story, ACs, or full lens output.
    - Include only materially relevant impacted files.
-   - **Hard cap: no step modifies >3 files.** Split before writing.
+   - If the whole change is small enough to review in one pass, keep it unsplit.
+   - **Hard cap: no task or unsplit execution step modifies >3 files.** Split before writing.
    - Prefer bullets and short paragraphs over long narrative.
+   - Every task must have one concrete verification step and one handoff expectation.
+   - Human review happens at the end of the whole plan in unsplit mode, and after each task in taskized mode.
 
-15. **Print chat summary:**
+16. **Write `execution-state.json`** to the story output folder immediately after `plan.md`:
+
+   For an **unsplit plan**:
+   ```json
+   {
+     "story_id": "<id>",
+     "plan_version": 1,
+     "is_taskized": false,
+     "status": "ready",
+     "blocked_reason": null,
+     "awaiting_human_approval": false,
+     "repo_anchor": "unknown",
+     "last_updated": "<ISO timestamp>"
+   }
+   ```
+
+   For a **taskized plan**:
+   ```json
+   {
+     "story_id": "<id>",
+     "plan_version": 1,
+     "is_taskized": true,
+     "current_task": "task-1",
+     "completed_tasks": [],
+     "status": "ready",
+     "blocked_reason": null,
+     "awaiting_human_approval": false,
+     "last_validated_task": null,
+     "repo_anchor": "unknown",
+     "last_updated": "<ISO timestamp>"
+   }
+   ```
+
+   `repo_anchor` starts as `"unknown"` — the implementation agent fills in the git commit hash when it begins work.
+   `awaiting_human_approval` flips to `true` after a task finishes validation and is waiting for review.
+
+   `execution-state.json` is owned by the **implementation agent**, not the planning agent. The planning agent only writes the initial skeleton.
+
+17. **Write `validation.md`** skeleton to the story output folder:
+
+   For an **unsplit plan**:
+   ```markdown
+   # Validation — <id>
+
+   Single execution receipt for an unsplit plan.
+
+   ---
+
+   ## Final Execution
+   - **Status:** pending
+   - **Timestamp:** —
+   - **Repo commit:** —
+   - **Files touched:** —
+   - **Commands run:** —
+   - **What changed:** —
+   - **Deviations from plan:** —
+   - **Warnings:** —
+   - **Human approval:** pending
+   ```
+
+   For a **taskized plan**:
+   ```markdown
+   # Validation — <id>
+
+   One section per completed task.
+   A task is complete only when validation passed and human approval is recorded.
+
+   ---
+
+   ## Task 1 — <task title>
+   - **ID:** task-1
+   - **Status:** pending
+   - **Timestamp:** —
+   - **Repo commit:** —
+   - **Files touched:** —
+   - **Commands run:** —
+   - **What changed:** —
+   - **Deviations from plan:** —
+   - **Warnings:** —
+   - **Human approval:** pending
+   - **Handoff to next task:** —
+   ```
+
+   Record handoff notes after each completed task so a fresh session can load the next task without relying on prior chat history.
+    **Scope:** <what is included; what is explicitly not included>
+
+18. **Print chat summary:**
 
     ```
     Plan ready. <one sentence: what the plan does in human terms>
 
-    plan.md covers:
-    - <N> steps, each ≤3 files
+    - Taskized: <yes — <N> tasks | no — unsplit>
+    - <N> execution units, each ≤3 files
     - <N> impacted files (top: <2-3 paths>)
     - <N> risks (top: <1-2 phrases>)
     - Tests: <unit/widget/integration counts>
     - Rollback: <one-phrase verdict>
 
-    Next: review plan.md, then hand off step 1 to your coding agent.
+    - execution-state.json — tracks current task and approval state
+    - validation.md — records validation results and handoff notes
+    Next: review plan.md, then hand off the whole plan (or task-1) to your coding agent.
     ```
 
 ---
 
 ## Length budgets (hard caps)
 
-| File           | Cap                                     |
-|----------------|-----------------------------------------|
-| `analysis.md`  | 150 lines total, TL;DR in first 3 lines |
-| `plan.md`      | 200 lines total                         |
-| `decisions.md` | 6 lines per question                    |
+| File                   | Cap                                                    |
+|------------------------|--------------------------------------------------------|
+| `analysis.md`          | 150 lines total, TL;DR in first 3 lines                |
+| `plan.md` (unsplit)    | 200 lines total                                        |
+| `plan.md` (taskized)   | 300 lines total                                        |
+| `decisions.md`         | 6 lines per question                                   |
+| `execution-state.json` | fixed schema, no free-text fields except blocked_reason|
+| `validation.md`        | 15 lines per execution section                         |
 
 ## Output style
 

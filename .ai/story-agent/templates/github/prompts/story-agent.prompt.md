@@ -1,6 +1,6 @@
 ---
-mode: agent
-description: Full workflow — fetch story from tracker, analyze codebase, generate implementation plan. Pauses for confirmation between phases.
+agent: agent
+description: Full workflow — fetch story from tracker, analyze codebase, generate an implementation plan. Pauses for confirmation before planning.
 ---
 
 # /story-agent
