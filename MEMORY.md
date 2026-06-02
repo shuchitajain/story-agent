@@ -18,17 +18,13 @@ What does not: commit messages, README changes, image swaps, example updates, wo
 
 ---
 
-## 2026-06-03 — Replace phased execution with optional taskized plans
+## 2026-06-03 — Taskized plans + tracker-decoupled story input
 
 **Commit:** `9c2e22f` — `replace phased execution with optional taskized plans`
 
-**Decision:** Plans are either unsplit (small, one-pass review) or taskized (split into bounded tasks with per-task review). The old phase-based execution model is gone. Hard cap: no execution unit touches more than 3 files.
+**Decision (planning):** Plans are either unsplit (small, one-pass review) or taskized (split into bounded tasks with per-task review). Hard cap: no execution unit touches more than 3 files. Phase count was a weak proxy for reviewability; task-sized units give tighter AI scope and safer cross-session resume without a `handoff.md` artifact. `plan-story.md` Phase 5 (step 14) decides the split; `execution-state.json` carries `is_taskized` and task-level state; `story-agent.md` resume flow handles `continue story <id> from task <N>`.
 
-**Why:** Phase count and architectural-layer count were weak proxies for reviewability. Task-sized units give tighter AI scope, clearer human checkpoints, and safer cross-session resume without a third artifact (`handoff.md`). Small changes stay unsplit to avoid unnecessary fragmentation.
-
-**What it replaced:** A phased-execution model where every plan was split by architectural layer.
-
-**Current impact:** `plan-story.md` Phase 5 (step 14) decides unsplit vs taskized. `execution-state.json` carries `is_taskized` boolean and task-level state. `validation.md` carries handoff notes to the next task when taskized. `story-agent.md` resume flow handles `continue story <id> from task <N>`.
+**Decision (input):** `explain-story` now accepts a story from three sources: (1) tracker ticket ID (original), (2) local file path, or (3) inline text pasted into the prompt. Step 1 of `explain-story.md` detects input type and routes accordingly; the PM question loop and all downstream output (`explanation.md`, handoff to `plan-story`) are identical regardless of source.
 
 ---
 

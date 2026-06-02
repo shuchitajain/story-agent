@@ -31,12 +31,14 @@ story-agent is additive by design. It does not replace your current setup for Gi
 
 ```text
 /story-agent PROJ-2356        # full workflow: fetch -> analyze -> plan
-/explain-story PROJ-2356      # just fetch story from tracker
+/story-agent path/to/story.md # same workflow, story from a local file
+/explain-story PROJ-2356      # just fetch + explain (tracker ticket)
+/explain-story path/to/story.md  # explain from a local file
 /plan-story PROJ-2356         # just analyze + plan (needs explain first)
 ```
 
 - `/story-agent` runs the full workflow end-to-end
-- `/explain-story` fetches story details, attachments, linked PRs/designs
+- `/explain-story` accepts a tracker ticket ID, a local file path, or inline story text pasted directly into the prompt
 - `/plan-story` discovers codebase context, runs 5 analysis lenses, generates plan
 - Question classification and late-answer refresh are built into the workflow; they are not separate top-level agents
 - Outputs: `.ai/story-agent/outputs/stories/<id>/`
@@ -116,8 +118,8 @@ Template used for merge:
 All `/story-agent`, `/explain-story`, and `/plan-story` commands must run in agent mode.
 
 ```text
-/story-agent <id>
-/explain-story <id>
+/story-agent <id|file-path|inline-story>
+/explain-story <id|file-path|inline-story>
 /plan-story <id>
 /plan-story <id> lens=architecture,testing
 continue story <id>
