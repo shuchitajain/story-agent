@@ -20,7 +20,7 @@ What does not: commit messages, README changes, image swaps, example updates, wo
 
 ## 2026-06-03 — Replace phased execution with optional taskized plans
 
-**Commit:** 
+**Commit:** `9c2e22f` — `replace phased execution with optional taskized plans`
 
 **Decision:** Plans are either unsplit (small, one-pass review) or taskized (split into bounded tasks with per-task review). The old phase-based execution model is gone. Hard cap: no execution unit touches more than 3 files.
 
