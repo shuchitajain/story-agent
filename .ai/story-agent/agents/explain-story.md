@@ -34,8 +34,8 @@ Exactly one of the following — detect automatically from the invocation:
 .ai/story-agent/outputs/stories/2356/
 ├── story.md
 ├── explanation.md
-├── attachments/
-├── design/
+├── attachments/          (only created when attachments exist)
+├── design/               (only created when design links exist)
 └── manual-todo.md
 ```
 
@@ -61,10 +61,10 @@ Exactly one of the following — detect automatically from the invocation:
    - Attachment Index
    - Preserve original wording verbatim. Never paraphrase ACs.
 
-3. **Download attachments.** Save to `attachments/<filename>`. If download fails, log to `manual-todo.md`.
+3. **Download attachments.** Only if the story has attachments: create `attachments/`, save each file to `attachments/<filename>`. If download fails, log to `manual-todo.md`. If there are no attachments, skip this step entirely — do not create the directory.
 
 4. **Detect external links** in description/comments:
-   - **Design tool URLs** (figma.com, etc.) → fetch via design MCP into `design/`
+   - **Design tool URLs** (figma.com, etc.) → only if any are found: create `design/`, fetch via design MCP into `design/`. If there are no design links, do not create the directory.
    - **PR URLs** → fetch summary via VCS MCP into `story.md` > Linked PRs
    - **SSO-walled URLs** → write to `manual-todo.md` as checkboxes
 

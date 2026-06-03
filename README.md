@@ -68,7 +68,7 @@ Running init multiple times is safe and idempotent.
 Prompt behavior across IDEs:
 
 - canonical agents always live in `.ai/story-agent/agents/`
-- `.github/agents/` files are GitHub Copilot mode-dropdown wrappers (registered in the Copilot Chat agent selector)
+- `.github/agents/` files are GitHub Copilot mode-dropdown wrappers (registered in the Copilot Chat agent selector); must use the `.agent.md` extension
 - `.cursor/skills/` files are Cursor skill wrappers (invoked with `/explain-story`, `/plan-story`, `/story-agent`)
 - IDE wrapper files delegate to the canonical agents; they are not the source of truth
 
@@ -88,6 +88,16 @@ story-agent no longer assumes ownership of a single MCP config path.
 - if one or more MCP config files already exist (VS Code, Cursor, Claude-style), init merges required story-agent servers (`jira`, `figma`, `github`) only when missing
 - if no MCP config exists, init creates one in the most likely workspace path (`.cursor/mcp.json`, `.mcp.json`, `.roo/mcp.json`, `.windsurf/mcp.json`, or fallback `.vscode/mcp.json`)
 - existing server definitions are preserved
+
+These three servers are opinionated defaults covering the three roles story-agent uses:
+
+| Role | Default server | Replace with |
+|---|---|---|
+| Tracker | `jira` (`mcp-atlassian`) | Any Jira-compatible, Linear, ADO, or GitHub Issues MCP |
+| Design | `figma` (Figma hosted MCP) | Any design tool MCP, or remove if unused |
+| VCS | `github` (`@modelcontextprotocol/server-github`) | GitLab, ADO, Bitbucket, or other VCS MCP |
+
+To use a different server, replace or remove the relevant entry in `.ai/story-agent/templates/vscode/mcp.json` before running init — or edit your MCP config directly after install.
 
 Claude Code note:
 - Claude Code user/local MCP: `~/.claude.json` (default)

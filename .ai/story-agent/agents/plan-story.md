@@ -25,8 +25,8 @@ Adds to existing `.ai/story-agent/outputs/stories/<id>/`:
 .ai/story-agent/outputs/stories/2356/
 ├── story.md                (from explain-story)
 ├── explanation.md          (from explain-story)
-├── attachments/            (from explain-story)
-├── design/                 (from explain-story)
+├── attachments/            (from explain-story — only if attachments exist)
+├── design/                 (from explain-story — only if design links exist)
 ├── manual-todo.md          (from explain-story)
 ├── analysis.md             ← NEW
 ├── decisions.md            ← NEW

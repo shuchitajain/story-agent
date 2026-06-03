@@ -37,9 +37,9 @@ story-agent is three things bundled together:
 .ai/story-agent/templates/ ← installer-only; never copied to target repos
 ├── vscode/mcp.json           ← MCP server template used by installer merge logic
 ├── github/agents/            ← GitHub Copilot mode-dropdown agent wrappers (copied when .github/ detected)
-│   ├── story-agent.md
-│   ├── explain-story.md
-│   └── plan-story.md
+│   ├── story-agent.agent.md
+│   ├── explain-story.agent.md
+│   └── plan-story.agent.md
 └── cursor/skills/            ← Cursor skill wrappers (copied when .cursor/ detected)
     ├── explain-story/SKILL.md
     ├── plan-story/SKILL.md
