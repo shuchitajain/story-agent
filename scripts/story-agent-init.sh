@@ -207,16 +207,43 @@ if mcp_path.exists():
 if not isinstance(config, dict):
     config = {"servers": {}, "inputs": []}
 
-if not isinstance(config.get("servers"), dict):
-    config["servers"] = {}
+# Use whichever server key the file already uses; default to "servers" for new files
+server_key = "mcpServers" if isinstance(config.get("mcpServers"), dict) else "servers"
+
+if not isinstance(config.get(server_key), dict):
+    config[server_key] = {}
 if not isinstance(config.get("inputs"), list):
     config["inputs"] = []
 
+
+def server_fingerprint(cfg):
+    """Identify a server by its endpoint, not its key name.
+    Two entries with different names but the same command+args or url are treated as duplicates."""
+    if not isinstance(cfg, dict):
+        return None
+    if isinstance(cfg.get("url"), str):
+        return ("url", cfg["url"])
+    cmd = cfg.get("command", "")
+    args = tuple(cfg.get("args", []))
+    return ("cmd", cmd, args)
+
+
+existing_fingerprints = {
+    server_fingerprint(v)
+    for v in config[server_key].values()
+    if isinstance(v, dict)
+}
+
 added = []
 for name, server_config in story_servers.items():
-    if name not in config["servers"]:
-        config["servers"][name] = server_config
-        added.append(name)
+    if name in config[server_key]:
+        continue  # exact key match — already present
+    fp = server_fingerprint(server_config)
+    if fp is not None and fp in existing_fingerprints:
+        continue  # same server registered under a different name — skip
+    config[server_key][name] = server_config
+    existing_fingerprints.add(fp)
+    added.append(name)
 
 if added or not mcp_path.exists():
     mcp_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
@@ -231,24 +258,40 @@ PY
 
 merge_mcp_servers() {
   local merged_any=false
-  local candidate
   local claude_global_mcp="${HOME}/.claude.json"
-  local candidates=(
-    ".vscode/mcp.json"
-    ".cursor/mcp.json"
-    ".cursor/mcp.jsonc"
-    ".mcp.json"
-    ".roo/mcp.json"
-    ".windsurf/mcp.json"
-  )
 
-  for candidate in "${candidates[@]}"; do
-    if [[ -f "${TARGET_ROOT}/${candidate}" ]]; then
-      merge_mcp_servers_into_file "${TARGET_ROOT}/${candidate}"
-      merged_any=true
+  # Check each IDE independently — all detected IDEs get updated, not just the first.
+  if [[ -d "${TARGET_ROOT}/.vscode" || -f "${TARGET_ROOT}/.vscode/mcp.json" ]]; then
+    merge_mcp_servers_into_file "${TARGET_ROOT}/.vscode/mcp.json"
+    merged_any=true
+  fi
+
+  if [[ -d "${TARGET_ROOT}/.cursor" ]]; then
+    if [[ -f "${TARGET_ROOT}/.cursor/mcp.jsonc" ]]; then
+      merge_mcp_servers_into_file "${TARGET_ROOT}/.cursor/mcp.jsonc"
+    else
+      merge_mcp_servers_into_file "${TARGET_ROOT}/.cursor/mcp.json"
     fi
-  done
+    merged_any=true
+  fi
 
+  if [[ -d "${TARGET_ROOT}/.roo" ]]; then
+    merge_mcp_servers_into_file "${TARGET_ROOT}/.roo/mcp.json"
+    merged_any=true
+  fi
+
+  if [[ -f "${TARGET_ROOT}/.windsurfrules" || -d "${TARGET_ROOT}/.windsurf" ]]; then
+    merge_mcp_servers_into_file "${TARGET_ROOT}/.windsurf/mcp.json"
+    merged_any=true
+  fi
+
+  # Merge standalone .mcp.json only if it already exists
+  if [[ -f "${TARGET_ROOT}/.mcp.json" ]]; then
+    merge_mcp_servers_into_file "${TARGET_ROOT}/.mcp.json"
+    merged_any=true
+  fi
+
+  # Claude global config — never create; only update if already present
   if [[ -f "${claude_global_mcp}" ]]; then
     merge_mcp_servers_into_file "${claude_global_mcp}"
     merged_any=true
@@ -256,15 +299,10 @@ merge_mcp_servers() {
     echo "MCP: detected CLAUDE.md but ${claude_global_mcp} is missing; skipping global file creation"
   fi
 
+  # Last resort: no IDE directory detected at all
   if [[ "${merged_any}" == "false" ]]; then
-    if [[ -d "${TARGET_ROOT}/.cursor" ]]; then
-      merge_mcp_servers_into_file "${TARGET_ROOT}/.cursor/mcp.json"
-    elif [[ -f "${TARGET_ROOT}/CLAUDE.md" ]]; then
+    if [[ -f "${TARGET_ROOT}/CLAUDE.md" ]]; then
       merge_mcp_servers_into_file "${TARGET_ROOT}/.mcp.json"
-    elif [[ -d "${TARGET_ROOT}/.roo" ]]; then
-      merge_mcp_servers_into_file "${TARGET_ROOT}/.roo/mcp.json"
-    elif [[ -f "${TARGET_ROOT}/.windsurfrules" || -d "${TARGET_ROOT}/.windsurf" ]]; then
-      merge_mcp_servers_into_file "${TARGET_ROOT}/.windsurf/mcp.json"
     else
       merge_mcp_servers_into_file "${TARGET_ROOT}/.vscode/mcp.json"
     fi
