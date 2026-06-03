@@ -79,7 +79,7 @@ ensure_story_agent_paragraph() {
 
 ## Story Agent
 
-This repo uses story-agent for AI-assisted story planning. Run `/story-agent`, `/explain-story`, or `/plan-story` in your IDE's AI chat. Input can be a tracker ID (e.g. PROJ-123), a local file path, or inline story text. Agents live in `.ai/story-agent/agents/`.
+This repo uses story-agent for AI-assisted story planning. Run `/story-agent`, `/explain-story`, or `/plan-story` in the IDE AI chat. Input can be a tracker ID (e.g. PROJ-123), a local file path, or inline story text. Agents live in `.ai/story-agent/agents/`.
 EOF
 )
 
