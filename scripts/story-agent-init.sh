@@ -2,21 +2,17 @@
 set -euo pipefail
 
 TARGET_DIR=""
-WITH_COPILOT_PROMPTS=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --with-copilot-prompts)
-      WITH_COPILOT_PROMPTS=true
-      shift
-      ;;
     --help|-h)
       cat <<'EOF'
 Usage:
-  ./scripts/story-agent-init.sh [target-directory] [--with-copilot-prompts]
+  ./scripts/story-agent-init.sh [target-directory]
 
-Options:
-  --with-copilot-prompts  Force install of .github/prompts templates.
+Copies story-agent assets into target-directory (default: current directory).
+Autodetects GitHub Copilot (.github/), Cursor (.cursor/), Roo (.roo/),
+Windsurf (.windsurf/), and Claude (CLAUDE.md) and installs matching IDE wrappers.
 EOF
       exit 0
       ;;
@@ -75,48 +71,42 @@ copy_tree_additive() {
   done < <(find "${source_dir}" -type f -print0)
 }
 
-ensure_story_agent_block() {
+ensure_story_agent_paragraph() {
   local target_file="$1"
-  local block
+  local paragraph
 
-  block=$(cat <<'EOF'
+  paragraph=$(cat <<'EOF'
 
 ## Story Agent
 
-See: .ai/story-agent/instructions/agent-instructions.md
+This repo uses story-agent for AI-assisted story planning. Run `/story-agent`, `/explain-story`, or `/plan-story` in your IDE's AI chat. Input can be a tracker ID (e.g. PROJ-123), a local file path, or inline story text. Agents live in `.ai/story-agent/agents/`.
 EOF
 )
 
   mkdir -p "$(dirname "${target_file}")"
 
   if [[ ! -f "${target_file}" ]]; then
-    cat >"${target_file}" <<'EOF'
-# AI Instructions
-
-See: .ai/story-agent/instructions/agent-instructions.md
-EOF
+    printf "%s\n" "${paragraph}" > "${target_file}"
     created_files=$((created_files + 1))
     return
   fi
 
-  if grep -Fq "See: .ai/story-agent/instructions/agent-instructions.md" "${target_file}"; then
+  if grep -Fq ".ai/story-agent/agents/" "${target_file}"; then
     return
   fi
 
-  printf "%s\n" "${block}" >>"${target_file}"
+  printf "%s\n" "${paragraph}" >> "${target_file}"
 }
 
 ensure_gitignore_block() {
   local gitignore_file="${TARGET_ROOT}/.gitignore"
-  local start_marker="# story-agent managed outputs"
-  local end_marker="# /story-agent managed outputs"
+  local start_marker="# story-agent"
 
   if [[ ! -f "${gitignore_file}" ]]; then
     cat >"${gitignore_file}" <<'EOF'
-# story-agent managed outputs
-.ai/story-agent/outputs/stories/
-!.ai/story-agent/outputs/.gitkeep
-# /story-agent managed outputs
+# story-agent
+.ai/story-agent/
+# /story-agent
 EOF
     created_files=$((created_files + 1))
     return
@@ -128,10 +118,9 @@ EOF
 
   cat >>"${gitignore_file}" <<'EOF'
 
-# story-agent managed outputs
-.ai/story-agent/outputs/stories/
-!.ai/story-agent/outputs/.gitkeep
-# /story-agent managed outputs
+# story-agent
+.ai/story-agent/
+# /story-agent
 EOF
 }
 
@@ -151,6 +140,9 @@ mcp_path = pathlib.Path(sys.argv[1])
 servers_path = pathlib.Path(sys.argv[2])
 
 story_servers = json.loads(servers_path.read_text(encoding="utf-8"))
+# Unwrap if the template uses the standard MCP envelope format {"servers": {...}}
+if isinstance(story_servers.get("servers"), dict):
+    story_servers = story_servers["servers"]
 
 
 def strip_jsonc(raw: str) -> str:
@@ -279,47 +271,26 @@ merge_mcp_servers() {
   fi
 }
 
-copy_tree_additive "${ASSET_ROOT}" "${TARGET_ROOT}/.ai/story-agent"
+copy_tree_additive "${ASSET_ROOT}/agents"  "${TARGET_ROOT}/.ai/story-agent/agents"
+copy_tree_additive "${ASSET_ROOT}/prompts" "${TARGET_ROOT}/.ai/story-agent/prompts"
+copy_tree_additive "${ASSET_ROOT}/outputs" "${TARGET_ROOT}/.ai/story-agent/outputs"
 
-copilot_detected=false
-if [[ -f "${TARGET_ROOT}/.github/copilot-instructions.md" || -d "${TARGET_ROOT}/.github/prompts" ]]; then
-  copilot_detected=true
+if [[ -d "${TARGET_ROOT}/.github" ]]; then
+  copy_tree_additive "${ASSET_ROOT}/templates/github/agents" "${TARGET_ROOT}/.github/agents"
 fi
 
-if [[ -d "${ASSET_ROOT}/templates/github/prompts" ]] && ([[ "${WITH_COPILOT_PROMPTS}" == "true" ]] || [[ "${copilot_detected}" == "true" ]]); then
-  copy_tree_additive \
-    "${ASSET_ROOT}/templates/github/prompts" \
-    "${TARGET_ROOT}/.github/prompts"
-fi
+# Always create/update AGENTS.md with a story-agent paragraph
+ensure_story_agent_paragraph "${TARGET_ROOT}/AGENTS.md"
 
-instruction_system_found=false
-instruction_targets=(
-  ".github/copilot-instructions.md"
-  "CLAUDE.md"
-  ".cursorrules"
-  ".windsurfrules"
-  ".clinerules"
-)
-
-for relative_path in "${instruction_targets[@]}"; do
-  if [[ -f "${TARGET_ROOT}/${relative_path}" ]]; then
-    instruction_system_found=true
-    ensure_story_agent_block "${TARGET_ROOT}/${relative_path}"
-  fi
-done
-
-if [[ -d "${TARGET_ROOT}/.roo" ]]; then
-  instruction_system_found=true
-  ensure_story_agent_block "${TARGET_ROOT}/.roo/story-agent.md"
+# Add to CLAUDE.md only when a .claude/ directory already exists
+if [[ -d "${TARGET_ROOT}/.claude" ]]; then
+  ensure_story_agent_paragraph "${TARGET_ROOT}/CLAUDE.md"
 fi
 
 if [[ -d "${TARGET_ROOT}/.cursor" ]]; then
-  instruction_system_found=true
-  ensure_story_agent_block "${TARGET_ROOT}/.cursor/story-agent.md"
-fi
-
-if [[ "${instruction_system_found}" == "false" ]]; then
-  ensure_story_agent_block "${TARGET_ROOT}/.github/copilot-instructions.md"
+  copy_tree_additive "${ASSET_ROOT}/templates/cursor/skills/explain-story" "${TARGET_ROOT}/.cursor/skills/explain-story"
+  copy_tree_additive "${ASSET_ROOT}/templates/cursor/skills/plan-story" "${TARGET_ROOT}/.cursor/skills/plan-story"
+  copy_tree_additive "${ASSET_ROOT}/templates/cursor/skills/story-agent" "${TARGET_ROOT}/.cursor/skills/story-agent"
 fi
 
 ensure_gitignore_block
@@ -330,3 +301,14 @@ echo "story-agent init complete"
 echo "- target: ${TARGET_ROOT}"
 echo "- created files: ${created_files}"
 echo "- skipped existing files: ${skipped_files}"
+
+# Offer to remove the cloned story-agent source directory.
+# Only shown in interactive terminals — CI pipelines (no TTY) skip this automatically.
+if [[ -t 0 && "${SOURCE_ROOT}" != "${TARGET_ROOT}" ]]; then
+  echo
+  read -r -p "Remove the cloned story-agent folder (${SOURCE_ROOT})? [y/N] " _cleanup_response
+  if [[ "${_cleanup_response}" =~ ^[Yy]$ ]]; then
+    rm -rf "${SOURCE_ROOT}"
+    echo "Removed ${SOURCE_ROOT}"
+  fi
+fi

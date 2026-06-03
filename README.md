@@ -45,55 +45,41 @@ story-agent is additive by design. It does not replace your current setup for Gi
 
 ## Quick Start
 
-Use the local init command (conceptually equivalent to `uvx story-agent init`):
+From the root of your project repo:
 
 ```bash
-git clone <repo-url> <local-path>/story-agent
-cd <local-path>/story-agent
-./scripts/story-agent init /path/to/your/project
-```
-
-Optional Copilot adapter install:
-
-```bash
-./scripts/story-agent init /path/to/your/project --with-copilot-prompts
+git clone https://github.com/shuchitajain/story-agent.git ./story-agent
+./story-agent/scripts/story-agent init .
 ```
 
 What init does:
 
 - creates `.ai/story-agent/` in the target repo
-- copies story-agent assets without overwriting existing files
-- installs slash command prompt wrappers into `.github/prompts/` only when Copilot is already detected, or when `--with-copilot-prompts` is passed
-- patches `.gitignore` with story-agent output paths
-- detects existing AI instruction systems and appends a small reference block
-- creates a minimal `.github/copilot-instructions.md` only when no instruction system exists
+- copies `agents/`, `prompts/`, and `outputs/` from story-agent into `.ai/story-agent/` in the target repo, without overwriting existing files
+- creates or updates `AGENTS.md` in the repo root with a short story-agent usage paragraph
+- creates or updates `CLAUDE.md` when a `.claude/` directory is already present
+- installs `.github/agents/` wrappers when a `.github/` directory is detected (GitHub Copilot mode-dropdown agents)
+- installs `.cursor/skills/` wrappers when a `.cursor/` directory is detected
+- adds `.ai/story-agent/` to `.gitignore`
 - merges story-agent MCP servers into existing MCP config files (`.vscode/mcp.json`, `.cursor/mcp.json`, `.mcp.json`, `~/.claude.json`, etc.) without removing existing servers
 
 Running init multiple times is safe and idempotent.
 
 Prompt behavior across IDEs:
 
-- canonical prompts always live in `.ai/story-agent/prompts/`
-- these prompts are used regardless of IDE through the story-agent instructions/agents
-- `.github/prompts/` files are optional Copilot slash-command wrappers, not the source of truth
+- canonical agents always live in `.ai/story-agent/agents/`
+- `.github/agents/` files are GitHub Copilot mode-dropdown wrappers (registered in the Copilot Chat agent selector)
+- `.cursor/skills/` files are Cursor skill wrappers (invoked with `/explain-story`, `/plan-story`, `/story-agent`)
+- IDE wrapper files delegate to the canonical agents; they are not the source of truth
 
 ## Existing AI Systems Supported
 
-The installer detects and integrates with these instruction ecosystems:
+- **All repos:** `AGENTS.md` is created (or appended to) with a story-agent usage paragraph.
+- **Claude Code:** `CLAUDE.md` is created (or appended to) only when a `.claude/` directory is already present.
+- **GitHub Copilot:** `.github/agents/` wrappers are installed when a `.github/` directory is detected.
+- **Cursor:** `.cursor/skills/` wrappers are installed when a `.cursor/` directory is detected.
 
-- `.github/copilot-instructions.md`
-- `CLAUDE.md`
-- `.cursorrules`
-- `.windsurfrules`
-- `.clinerules`
-- `.roo/*`
-- `.cursor/*`
-
-Integration is additive. The installer appends a reference to:
-
-`.ai/story-agent/instructions/agent-instructions.md`
-
-No existing instruction content is replaced.
+All installs are additive. Existing content is never replaced.
 
 ## MCP Setup
 

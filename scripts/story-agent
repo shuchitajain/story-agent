@@ -6,12 +6,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 usage() {
   cat <<'EOF'
 Usage:
-  ./scripts/story-agent init [target-directory] [--with-copilot-prompts]
+  ./story-agent/scripts/story-agent init [target-directory]
 
 Examples:
-  ./scripts/story-agent init
-  ./scripts/story-agent init ../my-repo
-  ./scripts/story-agent init ../my-repo --with-copilot-prompts
+  ./story-agent/scripts/story-agent init .
+  ./story-agent/scripts/story-agent init ../my-repo
 EOF
 }
 
