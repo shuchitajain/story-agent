@@ -320,8 +320,8 @@ fi
 # Always create/update AGENTS.md with a story-agent paragraph
 ensure_story_agent_paragraph "${TARGET_ROOT}/AGENTS.md"
 
-# Add to CLAUDE.md only when a .claude/ directory already exists
-if [[ -d "${TARGET_ROOT}/.claude" ]]; then
+# Add to CLAUDE.md when the file already exists, or when a .claude/ directory is present
+if [[ -f "${TARGET_ROOT}/CLAUDE.md" || -d "${TARGET_ROOT}/.claude" ]]; then
   ensure_story_agent_paragraph "${TARGET_ROOT}/CLAUDE.md"
 fi
 
