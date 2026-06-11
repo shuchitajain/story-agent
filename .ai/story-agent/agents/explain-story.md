@@ -34,9 +34,11 @@ Exactly one of the following — detect automatically from the invocation:
 .ai/story-agent/outputs/stories/2356/
 ├── story.md
 ├── explanation.md
-├── attachments/          (only created when attachments exist)
-├── design/               (only created when design links exist)
-└── manual-todo.md
+├── attachments/          (only when the tracker lists attachments)
+├── design/               (only when design links exist)
+│   ├── <slug>.png        (required — one per resolved Figma node)
+│   └── <slug>.md         (optional metadata companion)
+└── manual-todo.md        (only when there are failures or story gaps)
 ```
 
 ## Workflow
@@ -60,14 +62,35 @@ Exactly one of the following — detect automatically from the invocation:
    - **Linked PRs** (if VCS MCP wired and PR URLs found — include diff summary, review state, merge status)
    - Attachment Index
    - Preserve original wording verbatim. Never paraphrase ACs.
-
-3. **Download attachments.** Only if the story has attachments: create `attachments/`, save each file to `attachments/<filename>`. If download fails, log to `manual-todo.md`. If there are no attachments, skip this step entirely — do not create the directory.
-
+ 
+3. **Download attachments.** Only if the tracker returns one or more attachments:
+   - Create `attachments/` and save each file to `attachments/<filename>`.
+   - If a download fails, log to `manual-todo.md`.
+   - If there are **no** attachments, skip this step entirely — do **not** create `attachments/`.
+ 
 4. **Detect external links** in description/comments:
-   - **Design tool URLs** (figma.com, etc.) → only if any are found: create `design/`, fetch via design MCP into `design/`. If there are no design links, do not create the directory.
+   - **Design tool URLs** (figma.com, etc.) → [Design fetch (Figma)](#design-fetch-figma). Only create `design/` when design links exist.
    - **PR URLs** → fetch summary via VCS MCP into `story.md` > Linked PRs
    - **SSO-walled URLs** → write to `manual-todo.md` as checkboxes
-
+ 
+#### Design fetch (Figma)
+ 
+For **each** Figma URL in description, ACs, or comments:
+ 
+1. **Parse** `fileKey` and `nodeId` from the URL (`node-id=9519-15294` → `9519:15294`).
+2. **Export PNG (required).** Call design MCP `download_figma_images`:
+   - `fileKey` — parsed from URL
+   - `nodes` — `[{ "nodeId": "<id>", "fileName": "<slug>.png" }]`
+   - `localPath` — `.ai/story-agent/outputs/stories/<id>/design` (path relative to workspace root)
+   - `pngScale` — `2` unless the user specifies otherwise
+   - **Slug** the filename from the frame name or a short state label (e.g. `green-banner-no-buffer.png`).
+3. **Verify** the `.png` exists under `design/`. If the MCP wrote elsewhere, copy or move it into `design/`. A resolved node without a saved PNG is an **incomplete** fetch.
+4. **Metadata (optional).** Call `get_figma_data` for the same node and, if useful, write a companion `design/<slug>.md` with layout tokens, copy, and colors. This supplements the PNG — it does **not** replace it.
+5. **Record** each link in `story.md` > **Design Links** table: URL, node, PNG filename, fetch status.
+6. **On failure** (node not found, auth error): single retry, then log to `manual-todo.md` under `Access / Fetch Failures`. Do not substitute alternate frames unless the story text names them.
+ 
+**Never** satisfy design fetch with markdown-only output. Metadata from `get_figma_data` alone is not a design deliverable.
+ 
 ---
 
 ### File mode (replaces steps 1–4)
@@ -126,7 +149,7 @@ Exactly one of the following — detect automatically from the invocation:
    - story.md — <one-line summary>
    - explanation.md — plain-English narrative
    - attachments/ — <N files> or (none)
-   - design/ — <N frames> or (none)
+   - design/ — <N PNG frames> (+ <M metadata files>) or (none)
    - manual-todo.md — <N items> or (none)
    - decisions.md — (none yet, pending question answers below) or (none)
 
@@ -181,6 +204,7 @@ Exactly one of the following — detect automatically from the invocation:
 ## Failure handling
 
 - Single retry on MCP failures, then skip-and-log to `manual-todo.md`
+- A Figma node counts as fetched only when its `.png` is saved under `design/` — metadata-only output is a failure
 - Never block on a failed fetch — continue with what you have
 - Always report skipped items in chat summary
 - Split `manual-todo.md` into `Access / Fetch Failures` and `Story Gaps` when both are present
@@ -202,4 +226,6 @@ Exactly one of the following — detect automatically from the invocation:
 - Use `question-classification.md` to filter out low-value or cosmetic questions
 - **Use `list_dir` for workspace/directory discovery** — do not rely on `file_search` or `grep_search` to find directories; glob patterns skip hidden directories (`.ai/`, `.github/`, etc.)
 - **Never call `tracker-mcp`, `design-mcp`, or `vcs-mcp` in file or inline mode** — input is already on disk or in the prompt; no remote calls are needed or permitted.
-
+- **Design fetch must save PNG exports** — never write markdown-only summaries to `design/` in place of rendered frames
+- **Never create empty output directories** — do not `mkdir` `attachments/` or `design/` upfront; create each directory only when saving the first file into it
+ 
